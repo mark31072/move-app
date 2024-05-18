@@ -8,7 +8,7 @@ steps:
   # Push React app image to Container Registry for staging
   - name: 'gcr.io/cloud-builders/docker'
     id: 'PUSH_REACT_APP_STAGE'
-    args: ['push', 'gcr.io/$PROJECT_ID/react-app-stage:$SHORT_SHA']
+    args: ['push', 'northamerica-northeast1-docker.pkg.dev/$PROJECT_ID/react-app-stage:$SHORT_SHA']
 
   # Deploy React app to Cloud Run staging
   - name: 'gcr.io/cloud-builders/gcloud'
