@@ -12,7 +12,7 @@ steps:
     args: [
       'run', 'deploy', 'react-app',
       '--image', 'gcr.io/$PROJECT_ID/react-app:$SHORT_SHA',
-      '--region', 'YOUR_REGION',
+      '--region', 'northamerica-northeast1',
       '--platform', 'managed',
       '--allow-unauthenticated'
     ]
