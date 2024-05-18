@@ -1,0 +1,40 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'BUILD_REACT_APP'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/react-app:$SHORT_SHA', '-f', 'client/Dockerfile', 'client']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'PUSH_REACT_APP'
+    args: ['push', 'gcr.io/$PROJECT_ID/react-app:$SHORT_SHA']
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'DEPLOY_REACT_APP'
+    args: [
+      'run', 'deploy', 'react-app',
+      '--image', 'gcr.io/$PROJECT_ID/react-app:$SHORT_SHA',
+      '--region', 'YOUR_REGION',
+      '--platform', 'managed',
+      '--allow-unauthenticated'
+    ]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'BUILD_API_SERVER'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/api-server:$SHORT_SHA', '-f', 'server/Dockerfile', 'server']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'PUSH_API_SERVER'
+    args: ['push', 'gcr.io/$PROJECT_ID/api-server:$SHORT_SHA']
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'DEPLOY_API_SERVER'
+    args: [
+      'run', 'deploy', 'api-server',
+      '--image', 'gcr.io/$PROJECT_ID/api-server:$SHORT_SHA',
+      '--region', 'northamerica-northeast1',
+      '--platform', 'managed',
+      '--allow-unauthenticated'
+    ]
+
+images:
+  - 'gcr.io/$PROJECT_ID/react-app:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/api-server:$SHORT_SHA'
