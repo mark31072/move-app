@@ -1,40 +1,49 @@
+# CloudBuild Pipeline for Staging CloudRun
 steps:
+  # Build React app image for staging
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'BUILD_REACT_APP'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/react-app:$SHORT_SHA', '-f', 'client/Dockerfile', 'client']
+    id: 'BUILD_REACT_APP_STAGE'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/react-app-stage:$SHORT_SHA', '-f', 'client/Dockerfile', 'client']
 
+  # Push React app image to Container Registry for staging
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'PUSH_REACT_APP'
-    args: ['push', 'gcr.io/$PROJECT_ID/react-app:$SHORT_SHA']
+    id: 'PUSH_REACT_APP_STAGE'
+    args: ['push', 'gcr.io/$PROJECT_ID/react-app-stage:$SHORT_SHA']
 
+  # Deploy React app to Cloud Run staging
   - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'DEPLOY_REACT_APP'
-    args: [
-      'run', 'deploy', 'react-app',
-      '--image', 'gcr.io/$PROJECT_ID/react-app:$SHORT_SHA',
-      '--region', 'northamerica-northeast1',
-      '--platform', 'managed',
-      '--allow-unauthenticated'
-    ]
+    id: 'DEPLOY_REACT_APP_STAGE'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'my-docker-app-stage'  # Update to your Cloud Run service name for staging
+      - '--image=gcr.io/$PROJECT_ID/react-app-stage:$SHORT_SHA'
+      - '--region=northamerica-northeast1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
 
+  # Build API server image for staging
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'BUILD_API_SERVER'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/api-server:$SHORT_SHA', '-f', 'server/Dockerfile', 'server']
+    id: 'BUILD_API_SERVER_STAGE'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/api-server-stage:$SHORT_SHA', '-f', 'server/Dockerfile', 'server']
 
+  # Push API server image to Container Registry for staging
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'PUSH_API_SERVER'
-    args: ['push', 'gcr.io/$PROJECT_ID/api-server:$SHORT_SHA']
+    id: 'PUSH_API_SERVER_STAGE'
+    args: ['push', 'gcr.io/$PROJECT_ID/api-server-stage:$SHORT_SHA']
 
+  # Deploy API server to Cloud Run staging
   - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'DEPLOY_API_SERVER'
-    args: [
-      'run', 'deploy', 'api-server',
-      '--image', 'gcr.io/$PROJECT_ID/api-server:$SHORT_SHA',
-      '--region', 'northamerica-northeast1',
-      '--platform', 'managed',
-      '--allow-unauthenticated'
-    ]
+    id: 'DEPLOY_API_SERVER_STAGE'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'api-server-stage'  # Update to your Cloud Run service name for staging
+      - '--image=gcr.io/$PROJECT_ID/api-server-stage:$SHORT_SHA'
+      - '--region=northamerica-northeast1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
 
 images:
-  - 'gcr.io/$PROJECT_ID/react-app:$SHORT_SHA'
-  - 'gcr.io/$PROJECT_ID/api-server:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/react-app-stage:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/api-server-stage:$SHORT_SHA'
