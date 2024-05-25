@@ -1,34 +1,49 @@
-# CloudBuild Pipeline for Front-end Dockerfile
+# CloudBuild Pipeline for Staging CloudRun
 steps:
-  # Docker Build Image
+  # Build React app image for staging
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'BUILD_FRONTEND'
-    args: ['build', '-t', '$_FRONTEND_IMAGE', '-f', './client/Dockerfile', '.']
+    id: 'BUILD_REACT_APP_STAGE'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/react-app-stage:$SHORT_SHA', '-f', 'client/Dockerfile', 'client']
 
-  # Docker Push Image to Artifact Registry
+  # Push React app image to Container Registry for staging
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'PUSH_FRONTEND'
-    args: ['push', '$_FRONTEND_IMAGE']
+    id: 'PUSH_REACT_APP_STAGE'
+    args: ['push', 'gcr.io/$PROJECT_ID/react-app-stage:$SHORT_SHA']
 
-  # Docker Deploy image to Cloud Run
+  # Deploy React app to Cloud Run staging
   - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'DEPLOY_FRONTEND'
+    id: 'DEPLOY_REACT_APP_STAGE'
     args:
       - 'run'
-      - 'services'
-      - 'update'
-      - '$_FRONTEND_SERVICE_NAME'
-      - '--project=$_SERVICE_PROJECT'
-      - '--region=$_SERVICE_REGION'
-      - '--image=$_FRONTEND_IMAGE'
+      - 'deploy'
+      - 'my-docker-app-stage'  # Update to your Cloud Run service name for staging
+      - '--image=gcr.io/$PROJECT_ID/react-app-stage:$SHORT_SHA'
+      - '--region=northamerica-northeast1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
 
-images: # Display the image in the build results - Build Artifacts
-  - '$_FRONTEND_IMAGE'
+  # Build API server image for staging
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'BUILD_API_SERVER_STAGE'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/api-server-stage:$SHORT_SHA', '-f', 'server/Dockerfile', 'server']
 
-substitutions:
-  _FRONTEND_IMAGE: 'northamerica-northeast1-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REGISTRY}/${_FRONTEND_IMAGENAME}:${SHORT_SHA}'
-  _SERVICE_PROJECT: 'astahov-staging'
-  _SERVICE_REGION: 'northamerica-northeast1'
-  _FRONTEND_SERVICE_NAME: 'my-docker-app-stage' # Update with your service name
-  _DOCKER_REGISTRY: 'astahov-docker-repo'
-  _FRONTEND_IMAGENAME: 'app-stage' # Update with your image name
+  # Push API server image to Container Registry for staging
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'PUSH_API_SERVER_STAGE'
+    args: ['push', 'gcr.io/$PROJECT_ID/api-server-stage:$SHORT_SHA']
+
+  # Deploy API server to Cloud Run staging
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'DEPLOY_API_SERVER_STAGE'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'api-server-stage'  # Update to your Cloud Run service name for staging
+      - '--image=gcr.io/$PROJECT_ID/api-server-stage:$SHORT_SHA'
+      - '--region=northamerica-northeast1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/$PROJECT_ID/react-app-stage:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/api-server-stage:$SHORT_SHA'

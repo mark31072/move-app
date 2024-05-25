@@ -7,17 +7,14 @@ services:
       - "3000:3000"
     networks:
       - mern-app
-
-
   api-server:
     image: api-server 
     ports:
-      - "5001:5001"
+      - "5002:5002"
     depends_on:
       - mongo
     networks:
       - mern-app
-
   mongo:
     image: mongo:3.6.19-xenial
     ports:
@@ -30,6 +27,8 @@ services:
 networks:
   mern-app:
     driver: bridge
+
+
 
 volumes:
   mongo-data:
